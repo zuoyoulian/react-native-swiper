@@ -9,9 +9,8 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
-  ViewPagerAndroid,
+  ActivityIndicator,
   Platform,
-  ActivityIndicator
 } from 'react-native'
 
 const { width, height } = Dimensions.get('window')
@@ -162,6 +161,7 @@ export default class extends Component {
    */
   autoplayTimer = null
   loopJumpTimer = null
+  androidScrollEndTimer = null
 
   componentWillReceiveProps (nextProps) {
     const sizeChanged = (nextProps.width || width) !== this.state.width ||
@@ -177,6 +177,7 @@ export default class extends Component {
   componentWillUnmount () {
     this.autoplayTimer && clearTimeout(this.autoplayTimer)
     this.loopJumpTimer && clearTimeout(this.loopJumpTimer)
+    this.androidScrollEndTimer && clearTimeout(this.androidScrollEndTimer)
   }
 
   initState (props, setOffsetInState) {
@@ -393,11 +394,7 @@ export default class extends Component {
     if (state.dir === 'x') x = diff * state.width
     if (state.dir === 'y') y = diff * state.height
 
-    if (Platform.OS === 'android') {
-      this.refs.scrollView && this.refs.scrollView[animated ? 'setPage' : 'setPageWithoutAnimation'](diff)
-    } else {
       this.refs.scrollView && this.refs.scrollView.scrollTo({ x, y, animated })
-    }
 
     // update scroll state
     this.internals.isScrolling = true
@@ -407,7 +404,7 @@ export default class extends Component {
 
     // trigger onScrollEnd manually in android
     if (!animated || Platform.OS === 'android') {
-      setImmediate(() => {
+      this.androidScrollEndTimer = setTimeout(() => {
         this.onScrollEnd({
           nativeEvent: {
             position: diff
@@ -545,7 +542,6 @@ export default class extends Component {
   }
 
   renderScrollView = pages => {
-    if (Platform.OS === 'ios') {
       return (
         <ScrollView ref='scrollView'
           {...this.props}
@@ -558,16 +554,6 @@ export default class extends Component {
           {pages}
         </ScrollView>
        )
-    }
-    return (
-      <ViewPagerAndroid ref='scrollView'
-        {...this.props}
-        initialPage={this.props.loop ? this.state.index + 1 : this.state.index}
-        onPageSelected={this.onScrollEnd}
-        style={{flex: 1}}>
-        {pages}
-      </ViewPagerAndroid>
-    )
   }
 
   /**
