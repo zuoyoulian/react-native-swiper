@@ -415,6 +415,12 @@ export default class extends Component {
     }
   }
 
+  scrollToTop(animated) {
+    if (this.refs.scrollView) {
+       this.scrollBy(-this.state.index, animated)
+    }
+  }
+
   scrollViewPropOverrides = () => {
     const props = this.props
     let overrides = {}
