@@ -24,7 +24,6 @@ const styles = {
   container: {
     backgroundColor: 'transparent',
     position: 'relative',
-    flex: 1
   },
 
   wrapperIOS: {
